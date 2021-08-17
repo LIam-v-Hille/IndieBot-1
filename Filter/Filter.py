@@ -4,6 +4,7 @@ class Filter:		# Create a filter object
 
 	def __init__(self):
 		self.filters = []
+		self.infringments = {}
 		pass
 
 	def add_filter_phrase(self,*phrases):
@@ -11,6 +12,7 @@ class Filter:		# Create a filter object
 		for phrase in phrases:
 			if phrase not in self.filters:
 				self.filters.append(phrase)
+				self.infringments[phrase] = 0
 			else:
 				print(f"filter expression \"{phrase}\" already in list")
 				lphrases.remove(phrase)
@@ -26,19 +28,27 @@ class Filter:		# Create a filter object
 				self.filters.remove(phrase)
 		return f"removed {lphrases} from filters"
 
-	def filter_file(self,file, text: bool = False):
+	def filter_file(self,file, text: bool = False, logToFile:bool = True, logFile:str = ""):
 		lines = open(file,"r").readlines()
 		line_num = 1
 		for line in lines:
 			lower_line = line.lower()
-			i = 0
-			for _ in self.filters:
-				lower_lines = re.split(" |\n", lower_line)
-				if self.filters[i] in lower_lines:
+			lower_lines = re.split(" |\n", lower_line)
+			for i in range(len(self.filters)):
+				current_filter = self.filters[i]
+				if current_filter in lower_lines:
 					if text:
-						print(f"phrase \"{self.filters[i]}\" at line {line_num}")
-				i += 1
+						print(f"phrase {current_filter} at line {line_num}")
+					if logToFile:
+						self.infringments[current_filter] += 1
+						pass
 			line_num += 1
+		if logToFile:
+			with open(logFile, 'w') as f:
+				for key, value in self.infringments.items():
+					f.writelines(f"{key}: {value}\n")
+			pass
+
 
 	def get_filter(self, text: bool = False):
 		if text:
@@ -46,5 +56,5 @@ class Filter:		# Create a filter object
 		else:
 			return self.filters
 
-
-
+	def get_inf(self):
+		return self.infringments
